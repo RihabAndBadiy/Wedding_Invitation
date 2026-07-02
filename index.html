@@ -256,6 +256,9 @@
         }
     </style>
 </head>
+<audio id="bgMusic" preload="auto" loop>
+    <source src="romantic_instrumental.mp3" type="audio/mpeg">
+</audio>
 <body>
 
 <div class="stage" id="stage">
@@ -299,24 +302,63 @@
     const stage = document.getElementById('stage');
     const envelope = document.getElementById('envelope');
     const closeBtn = document.getElementById('closeBtn');
+    const bgMusic = document.getElementById("bgMusic");
 
-    for(let i=0;i<30;i++){
-        const m = document.createElement('div');
-        m.className = 'mote';
-        m.style.left = Math.random()*100 + 'vw';
-        m.style.animationDuration = (6 + Math.random()*8) + 's';
-        m.style.animationDelay = (Math.random()*8) + 's';
-        stage.appendChild(m);
+
+    // ===== Floating particles (dust effect) =====
+    for (let i = 0; i < 30; i++) {
+        const mote = document.createElement('div');
+        mote.className = 'mote';
+
+        mote.style.left = Math.random() * 100 + 'vw';
+        mote.style.animationDuration = (6 + Math.random() * 8) + 's';
+        mote.style.animationDelay = (Math.random() * 8) + 's';
+
+        stage.appendChild(mote);
     }
 
-    envelope.addEventListener('click', ()=>{
-        if(envelope.classList.contains('opened')) return;
+
+    // ===== Open envelope + start music =====
+    envelope.addEventListener('click', async () => {
+
+        if (envelope.classList.contains('opened')) return;
+
         envelope.classList.add('opened');
+
+        // start music with fade-in
+        bgMusic.volume = 0;
+
+        try {
+            await bgMusic.play();
+        } catch (err) {
+            console.log("Music blocked by browser:", err);
+            return;
+        }
+
+        let volume = 0;
+
+        const fadeIn = setInterval(() => {
+            volume += 0.02;
+
+            if (volume >= 0.4) {
+                volume = 0.4;
+                clearInterval(fadeIn);
+            }
+
+            bgMusic.volume = volume;
+        }, 120);
     });
 
-    closeBtn.addEventListener('click', (e)=>{
+
+    // ===== Close button (reset invitation) =====
+    closeBtn.addEventListener('click', (e) => {
         e.stopPropagation();
+
         envelope.classList.remove('opened');
+
+        // stop music and reset
+        bgMusic.pause();
+        bgMusic.currentTime = 0;
     });
 </script>
 
